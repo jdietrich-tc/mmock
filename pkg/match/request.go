@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/jmartin82/mmock/v3/pkg/match/payload"
@@ -52,35 +53,23 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 				return false
 			}
 
-			for i, v := range mval {
-				if (!strings.Contains(v, glob.GLOB) && v != rval[i]) || !glob.Glob(v, rval[i]) {
+			if !((mm.matchKey(rval, mval, globMatch)) ||
+				(mm.matchKey(rval, mval, regexpMatch))) {
 
-					if DEBUG {
-						log.Printf("value [%v] doesn't match mock [%v]", rval[i], v)
-					}
-
-					return false
-				}
+				return false
 			}
-
 		} else {
 			if rval, exists = mm.findByPartialKey(reqMap, key); exists {
 
-				for i, v := range mval {
-					if (!strings.Contains(v, glob.GLOB) && v != rval[i]) ||
-						!glob.Glob(v, rval[i]) {
+				if !((mm.matchKey(rval, mval, globMatch)) ||
+					(mm.matchKey(rval, mval, regexpMatch))) {
 
-						if DEBUG {
-							log.Printf("value [%v] doesn't match mock [%v]", rval[i], v)
-						}
-
-						return false
-					}
+					return false
 				}
 			} else {
 
 				if DEBUG {
-					log.Printf("value [%v] doesn't appear in mock", key)
+					log.Printf("value %v doesn't appear in mock", key)
 				}
 
 				return false
@@ -88,6 +77,37 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 		}
 	}
 	return true
+}
+
+type valueMatcher func(string, string) bool
+
+func globMatch(m string, v string) bool {
+
+	matched := ((strings.Contains(m, glob.GLOB) && glob.Glob(m, v)) || (m == v))
+	if DEBUG {
+		log.Printf("value %v globMatch %v: %v", v, m, matched)
+	}
+
+	return matched
+}
+
+func regexpMatch(m string, v string) bool {
+	matched, err := regexp.MatchString(m, fmt.Sprint(v))
+	if DEBUG {
+		log.Printf("value %v regexpMatch %v: %v [%v]", v, m, matched, err)
+	}
+
+	return (err == nil && matched)
+}
+
+func (mm Request) matchKey(rval []string, mval []string, findMatch valueMatcher) bool {
+	for i, m := range mval {
+		if findMatch(m, rval[i]) {
+
+			return true
+		}
+	}
+	return false
 }
 
 func (mm Request) findByPartialKey(reqMap mock.Values, partialMatch string) ([]string, bool) {
