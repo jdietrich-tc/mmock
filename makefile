@@ -1,10 +1,12 @@
 .PHONY: build doc fmt lint dev test vet bindata
 
-PKG_NAME=mmock
-NS = jordimartin
+PKG_NAME =mmock-tc
+NS = artifacts.cnco.tucows.systems/mse-mint-docker
 VERSION ?= latest
 
 export GO111MODULE=on
+export GOARCH=amd64
+export GOOS=linux
 
 
 build: bindata \
