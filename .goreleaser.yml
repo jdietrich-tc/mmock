@@ -1,6 +1,6 @@
 # .goreleaser.yml
 # Build customization
-project_name: mmock
+project_name: mmock-jcd
 builds:
   - main: cmd/mmock/main.go
     binary: mmock
@@ -17,23 +17,24 @@ builds:
     ldflags:
      - -X main.VERSION={{.Version}}
 archives:
-  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
-    replacements:
-      darwin: macOS
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - id: mmock
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
     format_overrides:
-    - goos: windows
-      format: zip
+      - goos: windows
+        format: zip
 dockers:
   - dockerfile: Dockerfile
     skip_push: false
     goarch: amd64
     use: buildx
     image_templates:
-      - "jordimartin/mmock:{{.Tag}}-amd64"
+      - "artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:{{.Tag}}-amd64"
     extra_files:
       - tls/server.crt
       - tls/server.key
@@ -44,25 +45,25 @@ dockers:
     goarch: arm64
     use: buildx
     image_templates:
-      - "jordimartin/mmock:{{.Tag}}-arm64"
+      - "artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:{{.Tag}}-arm64"
     extra_files:
       - tls/server.crt
       - tls/server.key
     build_flag_templates:
       - "--platform=linux/arm64"
 docker_manifests:
-  - name_template: "jordimartin/mmock:latest"
+  - name_template: "artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:latest"
     image_templates:
-      - jordimartin/mmock:{{ .Tag }}-amd64
-      - jordimartin/mmock:{{ .Tag }}-arm64
+      - artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:{{ .Tag }}-amd64
+      - artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:{{ .Tag }}-arm64
   - name_template: "jordimartin/mmock:{{.Tag}}"
     image_templates:
-      - jordimartin/mmock:{{ .Tag }}-amd64
-      - jordimartin/mmock:{{ .Tag }}-arm64
+      - artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:{{ .Tag }}-amd64
+      - artifacts.cnco.tucows.systems/mse-mint-docker/mmock-jcd:{{ .Tag }}-arm64
 release:
   github:
-    owner: jmartin82
-    name: mmock
+    owner: jdietrich-tc 
+    name: mmock-jcd
   draft: false
 changelog:
   filters:

@@ -19,6 +19,7 @@ var (
 	ErrCookiesNotMatch  = errors.New("Cookies not match")
 	ErrScenarioNotMatch = errors.New("Scenario state not match")
 	ErrPathNotMatch     = errors.New("Path not match")
+	DEBUG               = os.Getenv("DEBUG") == "true"
 )
 
 func NewTester(comparator *payload.Comparator, scenario ScenearioStorer) *Request {
@@ -31,8 +32,11 @@ type Request struct {
 }
 
 func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) bool {
-
 	if len(mockMap) > len(reqMap) {
+		if DEBUG {
+			log.Printf("mock contains more values [%d] than request [%d]",
+				len(mockMap), len(reqMap))
+		}
 
 		return false
 	}
@@ -41,21 +45,39 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 		if rval, exists := reqMap[key]; exists {
 
 			if len(mval) > len(rval) {
+				if DEBUG {
+					log.Printf("length of mock value [%d] > request value [%d]",
+						len(mval), len(rval))
+				}
+
 				return false
 			}
 
-			if !((mm.matchKey(rval, mval, globMatch)) ||
-				(mm.matchKey(rval, mval, regexpMatch))) {
+			for i, v := range mval {
+				if (!strings.Contains(v, glob.GLOB) && v != rval[i]) || !glob.Glob(v, rval[i]) {
+
+					if DEBUG {
+						log.Printf("value [%v] doesn't match mock [%v]", rval[i], v)
+					}
+
+					return false
+				}
+			}
 
 				return false
 			}
 		} else {
 			if rval, exists = mm.findByPartialKey(reqMap, key); exists {
+				for i, v := range mval {
+					if (!strings.Contains(v, glob.GLOB) && v != rval[i]) ||
+						!glob.Glob(v, rval[i]) {
 
-				if !((mm.matchKey(rval, mval, globMatch)) ||
-					(mm.matchKey(rval, mval, regexpMatch))) {
+						if DEBUG {
+							log.Printf("value [%v] doesn't match mock [%v]", rval[i], v)
+						}
 
-					return false
+						return false
+					}
 				}
 			} else {
 
