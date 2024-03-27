@@ -56,8 +56,7 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 			if !((mm.matchKey(rval, mval, globMatch)) ||
 				(mm.matchKey(rval, mval, regexpMatch))) {
 
-				return false
-			}
+			return false
 		} else {
 			if rval, exists = mm.findByPartialKey(reqMap, key); exists {
 
