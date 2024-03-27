@@ -75,6 +75,7 @@ func (jc *JSONComparator) doCompareArrayRegexUnmarshaled(patterns, values []map[
 	for i := 0; i < len(patterns); i++ {
 		if !jc.match(patterns[i], values[i]) {
 			if DEBUG {
+
 				log.Printf("value %v doesn't match %v",
 					values[i], patterns[i])
 			}
@@ -129,6 +130,7 @@ func (jc *JSONComparator) match(p, v map[string]interface{}) bool {
 				if DEBUG {
 					log.Printf("recursing into array %v", field)
 				}
+
 				valueJsonBytes, err1 := json.Marshal(value)
 				patternJsonBytes, err2 := json.Marshal(pattern)
 
