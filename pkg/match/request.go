@@ -53,18 +53,32 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 				return false
 			}
 
-			if !((mm.matchKey(rval, mval, globMatch)) ||
-				(mm.matchKey(rval, mval, regexpMatch))) {
+			for i, v := range mval {
+				if (!strings.Contains(v, glob.GLOB) && v != rval[i]) || !glob.Glob(v, rval[i]) {
+
+					if DEBUG {
+						log.Printf("value [%v] doesn't match mock [%v]", rval[i], v)
+					}
+
+					return false
+				}
+			}
 
 				return false
 			}
 		} else {
 			if rval, exists = mm.findByPartialKey(reqMap, key); exists {
 
-				if !((mm.matchKey(rval, mval, globMatch)) ||
-					(mm.matchKey(rval, mval, regexpMatch))) {
+				for i, v := range mval {
+					if (!strings.Contains(v, glob.GLOB) && v != rval[i]) ||
+						!glob.Glob(v, rval[i]) {
 
-					return false
+						if DEBUG {
+							log.Printf("value [%v] doesn't match mock [%v]", rval[i], v)
+						}
+
+						return false
+					}
 				}
 			} else {
 
