@@ -56,22 +56,23 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 			if !((mm.matchKey(rval, mval, globMatch)) ||
 				(mm.matchKey(rval, mval, regexpMatch))) {
 
-			return false
-		} else {
-			if rval, exists = mm.findByPartialKey(reqMap, key); exists {
+				return false
+			} else {
+				if rval, exists = mm.findByPartialKey(reqMap, key); exists {
 
-				if !((mm.matchKey(rval, mval, globMatch)) ||
-					(mm.matchKey(rval, mval, regexpMatch))) {
+					if !((mm.matchKey(rval, mval, globMatch)) ||
+						(mm.matchKey(rval, mval, regexpMatch))) {
+
+						return false
+					}
+				} else {
+
+					if DEBUG {
+						log.Printf("value %v doesn't appear in mock", key)
+					}
 
 					return false
 				}
-			} else {
-
-				if DEBUG {
-					log.Printf("value %v doesn't appear in mock", key)
-				}
-
-				return false
 			}
 		}
 	}
