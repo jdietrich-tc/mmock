@@ -130,9 +130,19 @@ func (jc *JSONComparator) match(p, v map[string]interface{}) bool {
 					log.Printf("recursing into array %v", field)
 				}
 
-				result = jc.doCompareArrayRegexUnmarshaled(
-					pattern.([]map[string]interface{}),
-					value.([]map[string]interface{}))
+				valueJsonBytes, err1 := json.Marshal(value)
+				patternJsonBytes, err2 := json.Marshal(pattern)
+
+				if err1 != nil || err2 != nil {
+					if DEBUG {
+						log.Printf("value %v raised %v and pattern % v raised %v",
+							value, err1, pattern, err2)
+					}
+					return false
+				}
+
+				result = jc.doCompareArrayRegex(
+					string(patternJsonBytes), string(valueJsonBytes))
 
 				if !result {
 					return false
