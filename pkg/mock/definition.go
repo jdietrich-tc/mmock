@@ -28,6 +28,7 @@ type Request struct {
 	QueryStringParameters Values `json:"queryStringParameters"`
 	Fragment              string `json:"fragment"`
 	HttpHeaders
+	OptionalPaths map[string]bool `json:"optionalPaths"`
 	Body string `json:"body"`
 }
 
