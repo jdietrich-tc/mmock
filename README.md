@@ -146,6 +146,9 @@ Mock definition:
 		"host": "example.com",
 		"method": "GET|POST|PUT|PATCH|...",
 		"path": "/your/path/:variable",
+        "pathVariables": {
+			"variable": "\\d*"
+        },
 		"queryStringParameters": {
 			"name": ["value"],
 			"name": ["value", "value"]
@@ -206,6 +209,7 @@ A core feature of Mmock is the ability to return canned HTTP responses for reque
 * *host*: Request http host. (without port)
 * *method*: Request http method. It allows more than one separated by pipes "|" **Mandatory**
 * *path*: Resource identifier. It allows :value matching. **Mandatory**
+* *pathVariables*: A map of path variables to regexp that they need to match against. { "value": "\\d*" }
 * *queryStringParameters*: Array of query strings. It allows more than one value for the same key.
 * *headers*: Array of headers. It allows more than one value for the same key. **Case sensitive!**
 * *cookies*: Array of cookies.
@@ -234,6 +238,7 @@ Query strings and headers support also global matches (*) in the header/paramete
 Regexp matching is available for:
 - body
 - query strings
+- path variables
 
 See https://pkg.go.dev/regexp/syntax for regexp syntax
 
@@ -639,6 +644,7 @@ You can always disable this behavior adding the following flag `-server-statisti
 - Support for Regular Expressions for QueryStringParameters [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
 - Support for Environment variable replacement [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
 - Support for Optional Paths within the body [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
+- Support for Regular Expressions for Path Variables [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
 
 ### Contributing
 
