@@ -25,6 +25,7 @@ func (fp ResponseMessageEvaluator) Eval(req *mock.Request, m *mock.Definition) {
 	requestFiller := fp.FillerFactory.CreateRequestFiller(req, m)
 	fakeFiller := fp.FillerFactory.CreateFakeFiller()
 	streamFiller := fp.FillerFactory.CreateStreamFiller()
+	envFiller := fp.FillerFactory.CreateEnvVarFiller()
 
 	//replace stream holders for their content
 	m.Response.HttpHeaders, m.Response.Body = fp.walkAndFill(m.Response, streamFiller.Fill(fp.walkAndGet(m.Response)))
@@ -37,6 +38,7 @@ func (fp ResponseMessageEvaluator) Eval(req *mock.Request, m *mock.Definition) {
 	//fill holders
 	vars := requestFiller.Fill(holders)
 	fp.mergeVars(vars, fakeFiller.Fill(holders))
+	fp.mergeVars(vars, envFiller.Fill(holders))
 
 	m.Response.HttpHeaders, m.Response.Body = fp.walkAndFill(m.Response, vars)
 	m.Callback.HttpHeaders, m.Callback.Body = fp.walkAndFill(m.Callback, vars)
