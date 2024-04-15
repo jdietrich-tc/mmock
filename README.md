@@ -144,6 +144,9 @@ Mock definition:
 		"host": "example.com",
 		"method": "GET|POST|PUT|PATCH|...",
 		"path": "/your/path/:variable",
+        "pathVariables": {
+			"variable": "\\d*"
+        },
 		"queryStringParameters": {
 			"name": ["value"],
 			"name": ["value", "value"]
@@ -154,6 +157,9 @@ Mock definition:
 		"cookies": {
 			"name": "value"
 		},
+        "optionalPaths": {
+          ".path.to.optional.field": true
+          },
 		"body": "Expected Body"
 	},
 	"response": {
@@ -201,9 +207,11 @@ A core feature of Mmock is the ability to return canned HTTP responses for reque
 * *host*: Request http host. (without port)
 * *method*: Request http method. It allows more than one separated by pipes "|" **Mandatory**
 * *path*: Resource identifier. It allows :value matching. **Mandatory**
+* *pathVariables*: A map of path variables to regexp that they need to match against. { "value": "\\d*" }
 * *queryStringParameters*: Array of query strings. It allows more than one value for the same key.
 * *headers*: Array of headers. It allows more than one value for the same key. **Case sensitive!**
 * *cookies*: Array of cookies.
+* *optionalPaths*: A map of paths within the body that should be considered optional. The value should always be true.
 * *body*: Body string. It allows * pattern. It also supports regular expressions for field values within JSON request bodies.
 
 In case of queryStringParameters, headers and cookies, the request can be matched only if all defined keys in mock will be present with the exact or glob value.
@@ -228,6 +236,7 @@ Query strings and headers support also global matches (*) in the header/paramete
 Regexp matching is available for:
 - body
 - query strings
+- path variables
 
 See https://pkg.go.dev/regexp/syntax for regexp syntax
 
@@ -316,6 +325,10 @@ You can also use "regex" and "concat" commands to complement GJson query:
   "discarded": "do not return, Please!"
 }
 ```
+
+**Environment variables:** fill with the env var that is set in the mmock Environment
+ 
+ - env(VARIABLE) will be replaced with the value of the environment variable VARIABLE 
 
 **External streams:** Perfect for embedding big payloads or getting data from another service.
 
@@ -627,6 +640,9 @@ You can always disable this behavior adding the following flag `-server-statisti
 - Support Regular Expressions for Field Values in JSON Request Body thanks to [@rosspatil](https://github.com/rosspatil)
 - Improved logging with levels thanks to [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
 - Support for Regular Expressions for QueryStringParameters [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
+- Support for Environment variable replacement [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
+- Support for Optional Paths within the body [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
+- Support for Regular Expressions for Path Variables [@jcdietrich](https://github.com/jcdietrich) [@jdietrich-tc](https://github.com/jdietrich-tc)
 
 ### Contributing
 

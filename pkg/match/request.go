@@ -19,6 +19,7 @@ var (
 	ErrCookiesNotMatch  = errors.New("Cookies not match")
 	ErrScenarioNotMatch = errors.New("Scenario state not match")
 	ErrPathNotMatch     = errors.New("Path not match")
+	ErrPathVariablesNotMatch = errors.New("Path variables not match")
 )
 
 func NewTester(comparator *payload.Comparator, scenario ScenearioStorer) *Request {
@@ -64,9 +65,9 @@ func (mm Request) matchKeyAndValues(reqMap mock.Values, mockMap mock.Values) boo
 					return false
 				}
 			} else {
-			  log.Debugf("value %v doesn't appear in mock", key)
+				log.Debugf("value %v doesn't appear in mock", key)
 
-			  return false
+				return false
 			}
 		}
 	}
@@ -189,8 +190,14 @@ func (mm Request) Match(req *mock.Request, mock *mock.Definition, scenarioAware 
 		return false, fmt.Errorf("Fragment not match. Actual: %s, Expected: %s", req.Fragment, mock.Request.Fragment)
 	}
 
-	if !glob.Glob(mock.Request.Path, req.Path) && route.Match(req.Path) == nil {
+	var pathMatch = route.Match(req.Path) 
+
+	if !glob.Glob(mock.Request.Path, req.Path) && pathMatch == nil {
 		return false, fmt.Errorf("%w Actual: %s, Expected: %s", ErrPathNotMatch, req.Path, mock.Request.Path)
+	}
+	
+	if pathMatch != nil && mock.Request.PathVariables != nil && !route.MatchPathVariables(pathMatch, mock.Request.PathVariables) {
+		return false, fmt.Errorf("%w Actual: %s Expected: %v", ErrPathVariablesNotMatch, mock.Request.PathVariables, pathMatch.Params)
 	}
 
 	if !mm.mockIncludesMethod(req.Method, &mock.Request) {
@@ -234,7 +241,11 @@ func (mm Request) bodyMatch(mockReq mock.Request, req *mock.Request) bool {
 	}
 
 	if value, ok := req.Headers["Content-Type"]; ok && len(value) > 0 {
-		if comparable, ok := mm.comparator.Compare(value[0], mockReq.Body, req.Body); comparable {
+		if comparable, ok := mm.comparator.Compare(
+		  value[0],
+		  mockReq.Body,
+		  req.Body,
+		  mockReq.OptionalPaths); comparable {
 			return ok
 		}
 	}

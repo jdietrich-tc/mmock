@@ -3,13 +3,18 @@ package mock
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jmartin82/mmock/v3/internal/config/logger"
 	"reflect"
 	"time"
 )
 
+var log = logger.Log
+
 type Values map[string][]string
 
 type Cookies map[string]string
+
+type PathValues map[string]string
 
 type HttpHeaders struct {
 	Headers Values  `json:"headers"`
@@ -22,16 +27,43 @@ type Request struct {
 	Port                  string `json:"port"`
 	Method                string `json:"method"`
 	Path                  string `json:"path"`
+	PathVariables      PathValues `json:"pathVariables"`
 	QueryStringParameters Values `json:"queryStringParameters"`
 	Fragment              string `json:"fragment"`
 	HttpHeaders
+	OptionalPaths map[string]bool `json:"optionalPaths"`
 	Body string `json:"body"`
+}
+
+type ReplacementRequiredPayload interface {
+	GetHeaders() HttpHeaders
+	GetBody() string
+}
+
+type ReplacementRequired struct {
+}
+
+func (rr Response) GetHeaders() HttpHeaders {
+	return rr.HttpHeaders
+}
+
+func (rr Response) GetBody() string {
+	return rr.Body
+}
+
+func (rr Callback) GetHeaders() HttpHeaders {
+	return rr.HttpHeaders
+}
+
+func (rr Callback) GetBody() string {
+	return rr.Body
 }
 
 type Response struct {
 	StatusCode int `json:"statusCode"`
 	HttpHeaders
 	Body string `json:"body"`
+	*ReplacementRequired
 }
 
 type Callback struct {
@@ -41,6 +73,7 @@ type Callback struct {
 	HttpHeaders
 	Body    string `json:"body"`
 	Timeout Delay  `json:"timeout"`
+	*ReplacementRequired
 }
 
 type Scenario struct {
